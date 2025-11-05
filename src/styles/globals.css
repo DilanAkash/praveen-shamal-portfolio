@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark light; }
+html,body,#root { height: 100%; margin: 0; padding: 0; }
+body { @apply bg-onyx text-porcelain antialiased; }
