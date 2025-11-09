@@ -3,8 +3,8 @@ import {
   useContext,
   useState,
   useEffect,
-  type ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
