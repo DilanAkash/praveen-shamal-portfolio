@@ -42,12 +42,22 @@ export default function App() {
           </Container>
         </Section>
 
-        {/* LIVE GALLERY SECTION */}
-        <Section>
+        {/* PORTFOLIO GALLERY SECTION */}
+        <Section id="gallery">
           <Container>
-            <h2 id="gallery" className="text-2xl font-bold mb-6 text-center">
-              Portfolio Highlights
-            </h2>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-3">
+                Portfolio Highlights
+              </h2>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Explore a curated selection of work across different genres and styles
+              </p>
+            </motion.div>
             <MasonryGallery />
           </Container>
         </Section>
