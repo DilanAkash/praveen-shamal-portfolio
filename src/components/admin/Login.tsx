@@ -75,7 +75,7 @@ export default function Login() {
                 protected
               </span>
               <span className="mt-1 text-[9px] text-gray-500">
-                v1.0 • private
+                v12.3 • Security Enhanced
               </span>
             </div>
           </div>
