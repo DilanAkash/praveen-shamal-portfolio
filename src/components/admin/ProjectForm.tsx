@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
+import type { FormEvent, ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { projectOperations } from "../../lib/sanityAdmin";
 import { motion } from "framer-motion";
@@ -17,6 +18,8 @@ interface ProjectData {
   description: string;
   image: File | null;
   existingImageUrl?: string;
+  published: boolean;
+  order?: number;
 }
 
 export default function ProjectForm() {
@@ -29,6 +32,8 @@ export default function ProjectForm() {
     category: "wedding",
     description: "",
     image: null,
+    published: true,
+    order: undefined,
   });
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -55,6 +60,8 @@ export default function ProjectForm() {
           description: project.description || "",
           image: null,
           existingImageUrl: project.image?.asset?.url,
+          published: project.published ?? true,
+          order: project.order,
         });
         if (project.image?.asset?.url) {
           setPreview(project.image.asset.url);
@@ -95,6 +102,8 @@ export default function ProjectForm() {
           category: formData.category,
           description: formData.description,
           image: formData.image || undefined,
+          published: formData.published,
+          order: formData.order,
         });
       } else {
         if (!formData.image) {
@@ -108,6 +117,7 @@ export default function ProjectForm() {
           description: formData.description,
           image: formData.image,
         });
+        // Note: Published defaults to true in create, order is optional
       }
 
       navigate("/admin");
@@ -239,6 +249,50 @@ export default function ProjectForm() {
               {isEditMode
                 ? "Leave empty to keep current image, or upload a new one to replace it"
                 : "Upload an image for this project"}
+            </p>
+          </div>
+
+          {/* Published Status */}
+          <div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                className="w-5 h-5 rounded border-white/20 bg-gray-800 text-white focus:ring-2 focus:ring-white/50"
+              />
+              <div>
+                <span className="block text-sm font-medium text-gray-300">Published</span>
+                <span className="text-xs text-gray-400">
+                  {formData.published
+                    ? "This project will be visible on the website"
+                    : "This project will be hidden (draft)"}
+                </span>
+              </div>
+            </label>
+          </div>
+
+          {/* Display Order */}
+          <div>
+            <label htmlFor="order" className="block text-sm font-medium text-gray-300 mb-2">
+              Display Order
+            </label>
+            <input
+              id="order"
+              type="number"
+              value={formData.order ?? ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  order: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                })
+              }
+              min="0"
+              className="w-full px-4 py-3 bg-gray-900 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+              placeholder="Leave empty for default order"
+            />
+            <p className="mt-2 text-sm text-gray-400">
+              Lower numbers appear first. Leave empty to use creation date order.
             </p>
           </div>
 

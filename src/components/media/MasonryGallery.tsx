@@ -221,7 +221,7 @@ export default function MasonryGallery() {
 
     client
       .fetch<SanityImageItem[]>(
-        `*[_type == "project" && defined(image.asset)] | order(_createdAt desc){
+        `*[_type == "project" && defined(image.asset) && published == true] | order(order asc, _createdAt desc){
           _id,
           title,
           category,
