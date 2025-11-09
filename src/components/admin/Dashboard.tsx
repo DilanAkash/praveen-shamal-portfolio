@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectOperations, isAdminConfigured } from "../../lib/sanityAdmin";
@@ -52,7 +52,7 @@ interface ActivityLog {
   type: "create" | "update" | "delete" | "publish" | "unpublish" | "reorder";
 }
 
-// Sortable Project Card Component
+/** Sortable Project Card — modern UI, same props/behaviour */
 function SortableProjectCard({
   project,
   isSelected,
@@ -72,118 +72,116 @@ function SortableProjectCard({
   getImageUrl: (image: Project["image"]) => string | null;
   formatDate: (date: string) => string;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: project._id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: project._id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.7 : 1,
   };
 
   return (
-    <div
-      ref={setNodeRef}
+    <motion.div
+      ref={setNodeRef as any}
       style={style}
-      className={`bg-gray-900 rounded-lg overflow-hidden border transition-all relative ${
-        isSelected
-          ? "border-white/50 ring-2 ring-white/20"
-          : "border-white/10 hover:border-white/20"
-      } ${isDragging ? "cursor-grabbing opacity-50" : "cursor-move"}`}
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className={`relative overflow-hidden rounded-2xl backdrop-blur-2xl
+        border ${isSelected ? "border-white/30" : "border-white/10"}
+        bg-white/[0.06] hover:bg-white/[0.09]
+        transition-all shadow-[0_18px_60px_rgba(0,0,0,0.5)]
+        ${isDragging ? "cursor-grabbing ring-2 ring-white/20" : "cursor-grab"}`}
     >
-      {/* Drag Handle */}
+      {/* Drag handle */}
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-2 left-2 z-10 p-2 bg-black/70 rounded cursor-grab active:cursor-grabbing hover:bg-black/90 transition-colors touch-none"
+        className="absolute top-2 left-2 z-10 p-2 rounded-xl bg-black/60 border border-white/10 hover:bg-black/80 active:cursor-grabbing"
         title="Drag to reorder"
       >
-        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
+        <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </div>
 
-      {/* Checkbox */}
+      {/* Select checkbox */}
       <div className="absolute top-2 right-2 z-10">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect(project._id)}
-          className="w-5 h-5 rounded border-white/20 bg-gray-800 text-white focus:ring-2 focus:ring-white/50"
+          className="w-5 h-5 rounded-md border-white/20 bg-black/60 text-white focus:ring-2 focus:ring-white/50"
           onClick={(e) => e.stopPropagation()}
         />
       </div>
 
-      {/* Image */}
+      {/* Cover */}
       {project.image && (
-        <div className="aspect-video bg-gray-800 overflow-hidden relative">
+        <div className="aspect-video relative overflow-hidden">
           <img
             src={getImageUrl(project.image) || ""}
             alt={project.title}
             className="w-full h-full object-cover"
           />
           {!project.published && (
-            <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500/80 text-black text-xs font-semibold rounded">
+            <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-yellow-400/90 text-black text-[11px] font-semibold">
               Draft
             </div>
           )}
+          {/* Subtle top gloss */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
         </div>
       )}
 
       {/* Content */}
       <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-lg line-clamp-1 pr-2">{project.title}</h3>
-          <span className="px-2 py-1 bg-gray-800 text-xs rounded capitalize whitespace-nowrap">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="font-semibold text-base md:text-lg leading-tight line-clamp-1">{project.title}</h3>
+          <span className="px-2 py-1 rounded-lg text-[11px] bg-black/50 border border-white/10 capitalize whitespace-nowrap">
             {project.category}
           </span>
         </div>
 
         {project.description && (
-          <p className="text-sm text-gray-400 line-clamp-2 mb-3">{project.description}</p>
+          <p className="text-sm text-gray-300/90 line-clamp-2 mb-3">{project.description}</p>
         )}
 
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+        <div className="flex items-center justify-between text-[11px] text-gray-400 mb-4">
           <span>Created: {formatDate(project._createdAt)}</span>
           {project.order !== undefined && (
-            <span className="px-2 py-0.5 bg-gray-800 rounded">Order: {project.order}</span>
+            <span className="px-2 py-0.5 rounded-md bg-black/50 border border-white/10">Order: {project.order}</span>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => onEdit(project._id)}
-            className="flex-1 px-3 py-2 bg-gray-800 border border-white/10 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+            className="px-3 py-2 rounded-xl text-sm bg-white/10 border border-white/15 hover:bg-white/20 transition-colors"
           >
             Edit
           </button>
           <button
             onClick={() => onTogglePublish(project._id, !project.published)}
-            className={`px-3 py-2 rounded-lg transition-colors text-sm ${
-              project.published
-                ? "bg-green-500/20 border border-green-500/50 text-green-400 hover:bg-green-500/30"
-                : "bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/30"
-            }`}
             title={project.published ? "Unpublish" : "Publish"}
+            className={`px-3 py-2 rounded-xl text-sm border transition-colors
+              ${project.published
+                ? "bg-emerald-400/15 border-emerald-400/50 text-emerald-300 hover:bg-emerald-400/25"
+                : "bg-amber-400/15 border-amber-400/50 text-amber-300 hover:bg-amber-400/25"}`}
           >
-            {project.published ? "✓" : "○"}
+            {project.published ? "Unpublish" : "Publish"}
           </button>
           <button
             onClick={() => onDelete(project._id)}
-            className="px-3 py-2 bg-red-500/20 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-colors text-sm text-red-400"
+            className="px-3 py-2 rounded-xl text-sm bg-red-400/10 border border-red-400/40 text-red-300 hover:bg-red-400/20 transition-colors"
           >
             Delete
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -195,14 +193,13 @@ export default function Dashboard() {
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
   const [showDrafts, setShowDrafts] = useState(true);
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
+  const [query, setQuery] = useState("");
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   useEffect(() => {
@@ -236,7 +233,7 @@ export default function Dashboard() {
           ...log,
           timestamp: new Date(log.timestamp),
         }));
-        setActivityLog(parsed.slice(-50)); // Keep last 50 activities
+        setActivityLog(parsed.slice(-50));
       } catch {
         setActivityLog([]);
       }
@@ -274,10 +271,7 @@ export default function Dashboard() {
 
   const handleBulkDelete = async () => {
     if (selectedProjects.size === 0) return;
-
-    if (!confirm(`Are you sure you want to delete ${selectedProjects.size} project(s)?`)) {
-      return;
-    }
+    if (!confirm(`Are you sure you want to delete ${selectedProjects.size} project(s)?`)) return;
 
     try {
       const ids = Array.from(selectedProjects);
@@ -285,9 +279,9 @@ export default function Dashboard() {
       await projectOperations.bulkDelete(ids);
       setProjects(projects.filter((p) => !ids.includes(p._id)));
       setSelectedProjects(new Set());
-      deletedProjects.forEach((p) => {
-        addActivityLog(`Deleted project "${p.title}"`, p.title, "delete");
-      });
+      deletedProjects.forEach((p) =>
+        addActivityLog(`Deleted project "${p.title}"`, p.title, "delete")
+      );
       loadProjects();
     } catch (err) {
       console.error("Error deleting projects:", err);
@@ -302,17 +296,15 @@ export default function Dashboard() {
       const ids = Array.from(selectedProjects);
       const updatedProjects = projects.filter((p) => ids.includes(p._id));
       await projectOperations.bulkPublish(ids, published);
-      setProjects(
-        projects.map((p) => (ids.includes(p._id) ? { ...p, published } : p))
-      );
+      setProjects(projects.map((p) => (ids.includes(p._id) ? { ...p, published } : p)));
       setSelectedProjects(new Set());
-      updatedProjects.forEach((p) => {
+      updatedProjects.forEach((p) =>
         addActivityLog(
           `${published ? "Published" : "Unpublished"} project "${p.title}"`,
           p.title,
           published ? "publish" : "unpublish"
-        );
-      });
+        )
+      );
       loadProjects();
     } catch (err) {
       console.error("Error updating projects:", err);
@@ -341,20 +333,13 @@ export default function Dashboard() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const oldIndex = projects.findIndex((p) => p._id === active.id);
       const newIndex = projects.findIndex((p) => p._id === over.id);
-
       const newProjects = arrayMove(projects, oldIndex, newIndex);
       setProjects(newProjects);
 
-      // Update order in Sanity
-      const updates = newProjects.map((project, index) => ({
-        id: project._id,
-        order: index,
-      }));
-
+      const updates = newProjects.map((project, index) => ({ id: project._id, order: index }));
       try {
         await projectOperations.bulkUpdateOrder(updates);
         addActivityLog("Reordered gallery", "Multiple projects", "reorder");
@@ -362,65 +347,65 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Error updating order:", err);
         alert(err instanceof Error ? err.message : "Failed to update order");
-        loadProjects(); // Revert on error
+        loadProjects();
       }
     }
   };
 
   const handleSelect = (id: string) => {
-    const newSelected = new Set(selectedProjects);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedProjects(newSelected);
+    const next = new Set(selectedProjects);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelectedProjects(next);
   };
 
   const handleSelectAll = () => {
-    if (selectedProjects.size === projects.length) {
-      setSelectedProjects(new Set());
-    } else {
-      setSelectedProjects(new Set(projects.map((p) => p._id)));
-    }
+    if (selectedProjects.size === projects.length) setSelectedProjects(new Set());
+    else setSelectedProjects(new Set(projects.map((p) => p._id)));
   };
 
   const getImageUrl = (image: Project["image"]) => {
     if (!image?.asset) return null;
-    if (image.asset.url) {
-      return `${image.asset.url}?w=400&h=300&fit=crop&auto=format`;
-    }
+    if (image.asset.url) return `${image.asset.url}?w=600&h=340&fit=crop&auto=format`;
     return null;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
+
+  const filteredProjects = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return projects;
+    return projects.filter((p) => {
+      const hay = `${p.title} ${p.category} ${p.description || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [projects, query]);
 
   if (!isAdminConfigured) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-2">Admin Panel Not Configured</h2>
-            <p className="text-gray-300 mb-4">
-              Please set the <code className="bg-black/50 px-2 py-1 rounded">VITE_SANITY_WRITE_TOKEN</code> environment
-              variable to enable write operations.
+      <div className="min-h-screen bg-black text-white p-6 md:p-10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,253,0.16),transparent_60%),radial-gradient(circle_at_bottom,_rgba(56,189,248,0.14),transparent_60%)]" />
+        <div className="relative max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-red-400/40 bg-red-400/10 p-6 backdrop-blur-xl">
+            <h2 className="text-xl font-semibold mb-2">Admin Panel Not Configured</h2>
+            <p className="text-gray-300">
+              Set <code className="bg-black/60 px-2 py-1 rounded">VITE_SANITY_WRITE_TOKEN</code> to enable write ops.
             </p>
-            <p className="text-sm text-gray-400">
-              You can get your write token from{" "}
+            <p className="text-sm text-gray-400 mt-3">
+              Manage tokens in{" "}
               <a
                 href="https://sanity.io/manage"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
+                className="text-blue-300 underline-offset-2 hover:underline"
               >
                 Sanity Management Console
               </a>
+              .
             </p>
           </div>
         </div>
@@ -429,19 +414,25 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(99,102,241,0.18),transparent_70%),radial-gradient(40%_50%_at_50%_100%,rgba(34,211,238,0.12),transparent_70%)]" />
+
       {/* Header */}
-      <header className="border-b border-white/10 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="text-sm text-gray-400">Manage your portfolio projects</p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div>
+                <h1 className="text-xl md:text-2xl font-semibold">Admin Dashboard</h1>
+                <p className="text-xs md:text-sm text-gray-400">Manage your portfolio projects</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => navigate("/admin/new")}
-                className="px-4 py-2 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-white via-slate-100 to-slate-300 hover:opacity-95 transition-all shadow-[0_14px_40px_rgba(0,0,0,0.6)]"
               >
                 + Add Project
               </button>
@@ -450,103 +441,120 @@ export default function Dashboard() {
                   logout();
                   navigate("/admin/login");
                 }}
-                className="px-4 py-2 bg-gray-800 border border-white/10 rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm bg-white/10 border border-white/15 hover:bg-white/20 transition-colors"
               >
                 Logout
               </button>
             </div>
           </div>
+
+          {/* Controls Row */}
+          <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none text-sm">
+                <input
+                  type="checkbox"
+                  checked={showDrafts}
+                  onChange={(e) => setShowDrafts(e.target.checked)}
+                  className="w-4 h-4 rounded border-white/20 bg-black/60 text-white"
+                />
+                <span>Show drafts</span>
+              </label>
+              <button
+                onClick={handleSelectAll}
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                {selectedProjects.size === projects.length ? "Deselect All" : "Select All"}
+              </button>
+            </div>
+
+            {/* Search (client-side filter only) */}
+            <div className="relative w-full md:w-80">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search title, category, description…"
+                className="w-full rounded-xl bg-white/8 border border-white/10 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/70 focus:border-indigo-400/70 placeholder:text-gray-500"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+                ⌘K
+              </span>
+            </div>
+
+            {/* Bulk actions */}
+            <AnimatePresence>
+              {selectedProjects.size > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="flex items-center gap-2"
+                >
+                  <span className="text-sm text-gray-400">{selectedProjects.size} selected</span>
+                  <button
+                    onClick={() => handleBulkPublish(true)}
+                    className="px-3 py-2 rounded-xl text-sm bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/25"
+                  >
+                    Publish
+                  </button>
+                  <button
+                    onClick={() => handleBulkPublish(false)}
+                    className="px-3 py-2 rounded-xl text-sm bg-amber-400/15 border border-amber-400/40 text-amber-300 hover:bg-amber-400/25"
+                  >
+                    Unpublish
+                  </button>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-3 py-2 rounded-xl text-sm bg-red-400/15 border border-red-400/40 text-red-300 hover:bg-red-400/25"
+                  >
+                    Delete
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-        {/* Filters and Bulk Actions */}
-        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showDrafts}
-                onChange={(e) => setShowDrafts(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-gray-800 text-white"
-              />
-              <span className="text-sm">Show Drafts</span>
-            </label>
-            <button
-              onClick={handleSelectAll}
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              {selectedProjects.size === projects.length ? "Deselect All" : "Select All"}
-            </button>
-          </div>
-
-          {selectedProjects.size > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">
-                {selectedProjects.size} selected
-              </span>
-              <button
-                onClick={() => handleBulkPublish(true)}
-                className="px-3 py-1.5 bg-green-500/20 border border-green-500/50 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors text-sm"
-              >
-                Publish
-              </button>
-              <button
-                onClick={() => handleBulkPublish(false)}
-                className="px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors text-sm"
-              >
-                Unpublish
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="px-3 py-1.5 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <p className="mt-4 text-gray-400">Loading projects...</p>
+            <div className="inline-block animate-spin rounded-full h-9 w-9 border-2 border-white/30 border-t-white" />
+            <p className="mt-4 text-gray-400">Loading projects…</p>
           </div>
         ) : error ? (
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-2">Error</h2>
-            <p className="text-gray-300">{error}</p>
+          <div className="rounded-2xl border border-red-400/40 bg-red-400/10 p-6 backdrop-blur-xl">
+            <h2 className="text-lg font-semibold mb-1">Error</h2>
+            <p className="text-gray-200">{error}</p>
             <button
               onClick={loadProjects}
-              className="mt-4 px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors"
+              className="mt-4 px-4 py-2 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-white via-slate-100 to-slate-300 hover:opacity-95 transition-all"
             >
               Retry
             </button>
           </div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg mb-4">No projects yet</p>
-            <button
-              onClick={() => navigate("/admin/new")}
-              className="px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Create Your First Project
-            </button>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-3">📭</div>
+            <p className="text-gray-400 text-base mb-6">
+              {query ? "No results match your search." : "No projects yet."}
+            </p>
+            {!query && (
+              <button
+                onClick={() => navigate("/admin/new")}
+                className="px-5 py-3 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-white via-slate-100 to-slate-300 hover:opacity-95 transition-all"
+              >
+                Create your first project
+              </button>
+            )}
           </div>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={projects.map((p) => p._id)}
-              strategy={rectSortingStrategy}
-            >
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={filteredProjects.map((p) => p._id)} strategy={rectSortingStrategy}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence>
-                  {projects.map((project) => (
+                <AnimatePresence initial={false}>
+                  {filteredProjects.map((project) => (
                     <SortableProjectCard
                       key={project._id}
                       project={project}
@@ -567,55 +575,62 @@ export default function Dashboard() {
 
         {/* Activity Log */}
         {activityLog.length > 0 && (
-          <div className="mt-12 bg-gray-900/50 rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+          <section className="mt-12 rounded-2xl border border-white/10 bg-white/[0.05] p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Recent Activity</h2>
+              <span className="text-[10px] px-2 py-1 rounded-full bg-black/50 border border-white/10 text-gray-300">
+                last {Math.min(activityLog.length, 50)} events
+              </span>
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y divide-white/5">
               {activityLog.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between text-sm py-2 border-b border-white/5"
-                >
-                  <span className="text-gray-300">{log.action}</span>
+                <div key={log.id} className="flex items-center justify-between py-2 text-sm">
+                  <span className="text-gray-200">{log.action}</span>
                   <span className="text-gray-500 text-xs">
                     {log.timestamp.toLocaleTimeString()}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </main>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteConfirm && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <motion.div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-gray-900 rounded-lg p-6 max-w-md w-full border border-white/10"
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl shadow-[0_18px_60px_rgba(0,0,0,0.7)]"
             >
-              <h3 className="text-xl font-bold mb-2">Delete Project?</h3>
-              <p className="text-gray-400 mb-6">
-                Are you sure you want to delete this project? This action cannot be undone.
+              <h3 className="text-lg font-semibold mb-2">Delete project?</h3>
+              <p className="text-sm text-gray-300 mb-6">
+                This action can’t be undone. The project will be permanently removed.
               </p>
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-white/10 rounded-lg hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-xl text-sm bg-white/10 border border-white/15 hover:bg-white/20 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors"
                 >
                   Delete
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
