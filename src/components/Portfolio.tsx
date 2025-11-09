@@ -49,12 +49,12 @@ export default function Portfolio() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
+              className="mb-8 md:mb-12 text-center"
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-3">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3 px-4">
                 Portfolio Highlights
               </h2>
-              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              <p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto px-4">
                 Explore a curated selection of work across different genres and styles
               </p>
             </motion.div>

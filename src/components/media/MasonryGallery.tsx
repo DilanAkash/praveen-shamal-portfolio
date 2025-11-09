@@ -50,15 +50,17 @@ const CATEGORIES: CategoryInfo[] = [
 
 type SortOption = "newest" | "oldest" | "category";
 
-// Loading skeleton component
-function GallerySkeleton() {
+// Loading skeleton component - mobile optimized
+function GallerySkeleton({ isMobile }: { isMobile: boolean }) {
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-      {Array.from({ length: 12 }).map((_, i) => (
+    <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-2 sm:gap-3 md:gap-4">
+      {Array.from({ length: isMobile ? 6 : 12 }).map((_, i) => (
         <div
           key={i}
-          className="break-inside-avoid rounded-xl overflow-hidden bg-gray-900/50 animate-pulse"
-          style={{ height: `${200 + Math.random() * 200}px` }}
+          className="break-inside-avoid rounded-lg md:rounded-xl overflow-hidden bg-gray-900/50 animate-pulse mb-2 sm:mb-3 md:mb-4"
+          style={{
+            height: `${200 + Math.random() * 200}px`,
+          }}
         >
           <div className="w-full h-full bg-gray-800/50" />
         </div>
@@ -72,34 +74,40 @@ function ImageCard({
   item,
   index,
   onClick,
+  isMobile,
 }: {
   item: ImageItem;
   index: number;
   onClick: () => void;
+  isMobile?: boolean;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   const categoryInfo = CATEGORIES.find((cat) => cat.name === item.category) || CATEGORIES[0];
 
+  // On mobile, show info always; on desktop, show on hover
+  const showInfo = isMobile ? true : hovered;
+  const showOverlay = isMobile || hovered;
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.4, delay: index * 0.03 }}
-      className="relative break-inside-avoid mb-4 cursor-pointer group overflow-hidden rounded-xl bg-gray-900/30"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      transition={{ duration: 0.3, delay: index * 0.02 }}
+      className="relative mb-2 sm:mb-3 md:mb-4 cursor-pointer group overflow-hidden rounded-lg md:rounded-xl bg-gray-900/30 active:scale-[0.98] transition-transform break-inside-avoid"
+      onMouseEnter={() => !isMobile && setHovered(true)}
+      onMouseLeave={() => !isMobile && setHovered(false)}
       onClick={onClick}
     >
       {/* Image container */}
-      <div className="relative aspect-auto overflow-hidden rounded-xl">
+      <div className="relative w-full overflow-hidden rounded-lg md:rounded-xl">
         {/* Blur placeholder */}
         {!imageLoaded && item.lqip && (
           <div
-            className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-50"
+            className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-30"
             style={{ backgroundImage: `url(${item.lqip})` }}
           />
         )}
@@ -110,96 +118,75 @@ function ImageCard({
           alt={item.alt}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
-          className={`w-full h-auto object-cover transition-all duration-700 ${
+          className={`w-full h-auto object-cover transition-all duration-500 ${
             imageLoaded ? "opacity-100" : "opacity-0"
-          } group-hover:scale-110`}
+          } ${!isMobile ? "group-hover:scale-105" : ""}`}
           style={{ filter: imageLoaded ? "none" : "blur(20px)" }}
         />
 
-        {/* Gradient overlay */}
+        {/* Gradient overlay - always visible on mobile, hover on desktop */}
         <div
-          className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 transition-opacity duration-300 ${
-            hovered ? "opacity-100" : "opacity-0"
+          className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 transition-opacity duration-300 ${
+            showOverlay ? "opacity-100" : "opacity-0 md:opacity-0"
           }`}
         />
 
-        {/* Content overlay */}
-        <AnimatePresence>
-          {hovered && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 flex flex-col justify-end p-4 text-white pointer-events-none"
-            >
-              {/* Category badge */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
-                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold mb-2 w-fit border ${
-                  categoryInfo.color
-                }`}
-              >
-                {categoryInfo.label}
-              </motion.div>
+        {/* Content overlay - Simplified on mobile for 2-column layout */}
+        <div
+          className={`absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 text-white pointer-events-none transition-opacity duration-300 ${
+            showInfo ? "opacity-100" : "opacity-0 md:opacity-0"
+          }`}
+        >
+          {/* Category badge - Smaller on mobile */}
+          <div
+            className={`inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-full text-xs font-semibold mb-1 sm:mb-1.5 md:mb-2 w-fit border ${
+              categoryInfo.color
+            }`}
+          >
+            <span className="hidden sm:inline">{categoryInfo.label}</span>
+            <span className="sm:hidden text-[10px] font-medium">
+              {categoryInfo.label === "All Work" ? "All" : categoryInfo.label.slice(0, 4)}
+            </span>
+          </div>
 
-              {/* Title */}
-              {item.title && (
-                <motion.h3
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="text-lg font-bold mb-1 line-clamp-2"
-                >
-                  {item.title}
-                </motion.h3>
-              )}
-
-              {/* Description */}
-              {item.description && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-sm text-gray-300 line-clamp-2"
-                >
-                  {item.description}
-                </motion.p>
-              )}
-
-              {/* View indicator */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
-                className="mt-3 text-xs text-gray-400 flex items-center gap-1"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-                Click to view
-              </motion.div>
-            </motion.div>
+          {/* Title - Smaller on mobile */}
+          {item.title && (
+            <h3 className="text-sm sm:text-base md:text-lg font-bold mb-0.5 sm:mb-1 line-clamp-2">
+              {item.title}
+            </h3>
           )}
-        </AnimatePresence>
+
+          {/* Description - hide on mobile to save space, show on larger screens */}
+          {item.description && (
+            <p className="text-xs md:text-sm text-gray-300 line-clamp-2 hidden md:block">
+              {item.description}
+            </p>
+          )}
+
+          {/* View indicator - Hide on mobile to save space */}
+          <div className="mt-1.5 sm:mt-2 md:mt-3 text-xs text-gray-400 items-center gap-1 hidden sm:flex">
+            <svg
+              className="w-3.5 h-3.5 md:w-4 md:h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+            <span className="hidden md:inline">Tap to view</span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -214,7 +201,18 @@ export default function MasonryGallery() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterSticky, setFilterSticky] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Fetch images from Sanity
   useEffect(() => {
@@ -240,9 +238,10 @@ export default function MasonryGallery() {
               const source = item.image as Record<string, unknown>;
 
               // Generate optimized image URLs
+              // Use responsive sizing that works well on both mobile and desktop
               const thumbnailSrc = urlFor(source)
-                .width(600)
-                .height(800)
+                .width(500)
+                .height(700)
                 .fit("max")
                 .format("webp")
                 .quality(75)
@@ -327,8 +326,13 @@ export default function MasonryGallery() {
     setFilteredImages(filtered);
   }, [images, activeCategory, sortBy]);
 
-  // Sticky filter bar on scroll
+  // Sticky filter bar on scroll - disabled on mobile for better UX
   useEffect(() => {
+    if (isMobile) {
+      setFilterSticky(false);
+      return;
+    }
+
     const handleScroll = () => {
       if (filterRef.current) {
         const rect = filterRef.current.getBoundingClientRect();
@@ -338,7 +342,7 @@ export default function MasonryGallery() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isMobile]);
 
   // Handle filter change
   const handleFilter = (category: string) => {
@@ -355,11 +359,11 @@ export default function MasonryGallery() {
   if (loading) {
     return (
       <div>
-        <div className="mb-8">
-          <div className="h-12 bg-gray-900/50 rounded-lg animate-pulse mb-4" />
-          <div className="h-10 bg-gray-900/50 rounded-lg animate-pulse w-32" />
+        <div className="mb-4 md:mb-8">
+          <div className="h-10 md:h-12 bg-gray-900/50 rounded-lg animate-pulse mb-3 md:mb-4" />
+          <div className="h-8 md:h-10 bg-gray-900/50 rounded-lg animate-pulse w-24 md:w-32" />
         </div>
-        <GallerySkeleton />
+        <GallerySkeleton isMobile={isMobile} />
       </div>
     );
   }
@@ -400,15 +404,15 @@ export default function MasonryGallery() {
       {/* Filter and Sort Controls */}
       <div
         ref={filterRef}
-        className={`mb-8 transition-all duration-300 ${
-          filterSticky
+        className={`mb-4 md:mb-8 transition-all duration-300 ${
+          filterSticky && !isMobile
             ? "sticky top-16 z-40 bg-black/95 backdrop-blur-md py-4 -mx-4 px-4 rounded-lg border-b border-white/10"
             : ""
         }`}
       >
-        {/* Category Filters */}
-        <div className="mb-4 -mx-2 px-2">
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
+        {/* Category Filters - Mobile optimized */}
+        <div className="mb-3 md:mb-4 -mx-1 md:-mx-2 px-1 md:px-2">
+          <div className="flex items-center gap-2 md:gap-3 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
             {CATEGORIES.filter((cat) => cat.name === "All" || categoryCounts[cat.name] > 0).map(
               (category) => {
                 const count = categoryCounts[category.name] || 0;
@@ -418,16 +422,15 @@ export default function MasonryGallery() {
                   <motion.button
                     key={category.name}
                     onClick={() => handleFilter(category.name)}
-                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                    className={`px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-200 border whitespace-nowrap snap-start touch-manipulation ${
                       isActive
                         ? "bg-white text-black border-white shadow-lg"
-                        : "bg-transparent text-white/70 border-white/20 hover:bg-white/10 hover:text-white"
+                        : "bg-transparent text-white/70 border-white/20 active:bg-white/10"
                     }`}
                     aria-pressed={isActive}
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 md:gap-2">
                       {category.label}
                       {count > 0 && (
                         <span
@@ -448,20 +451,25 @@ export default function MasonryGallery() {
           </div>
         </div>
 
-        {/* Sort and Results Count */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="text-sm text-gray-400">
+        {/* Sort and Results Count - Stack on mobile */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+          <div className="text-xs md:text-sm text-gray-400">
             Showing <span className="text-white font-semibold">{filteredImages.length}</span>{" "}
             {filteredImages.length === 1 ? "image" : "images"}
-            {activeCategory !== "All" && ` in ${CATEGORIES.find((c) => c.name === activeCategory)?.label}`}
+            {activeCategory !== "All" && (
+              <span className="hidden md:inline">
+                {" "}
+                in {CATEGORIES.find((c) => c.name === activeCategory)?.label}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-400">Sort:</label>
+            <label className="text-xs md:text-sm text-gray-400">Sort:</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-1.5 bg-gray-900/50 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+              className="px-3 py-2 md:py-1.5 bg-gray-900/50 border border-white/20 rounded-lg text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent touch-manipulation"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -471,19 +479,19 @@ export default function MasonryGallery() {
         </div>
       </div>
 
-      {/* Gallery Grid */}
+      {/* Gallery Grid - Double column on mobile, masonry on larger screens */}
       {filteredImages.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-lg mb-2">No images in this category</div>
+        <div className="text-center py-8 md:py-12">
+          <div className="text-gray-400 text-base md:text-lg mb-2">No images in this category</div>
           <button
             onClick={() => setActiveCategory("All")}
-            className="text-white underline hover:text-gray-300"
+            className="text-white underline active:text-gray-300 text-sm md:text-base"
           >
             View all work
           </button>
         </div>
       ) : (
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+        <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-2 sm:gap-3 md:gap-4">
           <AnimatePresence mode="popLayout">
             {filteredImages.map((item, index) => (
               <ImageCard
@@ -491,6 +499,7 @@ export default function MasonryGallery() {
                 item={item}
                 index={index}
                 onClick={() => setLightboxIndex(index)}
+                isMobile={isMobile}
               />
             ))}
           </AnimatePresence>
@@ -513,8 +522,8 @@ export default function MasonryGallery() {
           doubleClickMaxStops: 2,
           keyboardMoveDistance: 50,
           wheelZoomDistanceFactor: 100,
-          pinchZoomDistanceFactor: 100,
-          scrollToZoom: true,
+          pinchZoomDistanceFactor: isMobile ? 50 : 100,
+          scrollToZoom: !isMobile, // Disable scroll to zoom on mobile for better UX
         }}
         carousel={{
           finite: false,

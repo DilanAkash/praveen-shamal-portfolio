@@ -14,3 +14,16 @@ body { @apply bg-onyx text-porcelain antialiased; }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Touch optimization */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Better mobile tap targets */
+@media (max-width: 768px) {
+  button,
+  a {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  }
+}
