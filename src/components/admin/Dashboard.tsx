@@ -437,7 +437,7 @@ export default function Dashboard() {
               <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold">Admin Dashboard</h1>
-                <p className="text-xs md:text-sm text-gray-400">Manage your portfolio projects</p>
+                <p className="text-xs md:text-sm text-gray-400">Welcome Praveen, Manage your portfolio projects</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

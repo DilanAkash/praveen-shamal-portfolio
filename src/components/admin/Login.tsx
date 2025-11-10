@@ -23,7 +23,7 @@ export default function Login() {
     if (success) {
       navigate("/admin");
     } else {
-      setError("Incorrect password. Please try again.");
+      setError("Wayradi hutto password eka");
       setPassword("");
     }
 
@@ -82,7 +82,7 @@ export default function Login() {
           </div>
 
           <p className="text-sm text-gray-400 mb-6">
-            Enter the admin passphrase to access the control panel.
+            Ubata mama dunna password eka gahapn hariyata.
             <span className="text-gray-500 ml-1">
               Unauthorized access is monitored.
             </span>
@@ -94,7 +94,7 @@ export default function Login() {
                 htmlFor="password"
                 className="block text-xs font-medium text-gray-300 tracking-wide"
               >
-                Password
+                Password eka gahapn
               </label>
               <div className="relative group">
                 <input
