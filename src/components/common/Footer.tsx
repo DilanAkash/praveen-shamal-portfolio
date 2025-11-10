@@ -5,7 +5,7 @@ const year = new Date().getFullYear();
 
 export default function Footer() {
   return (
-    <footer className="relative mt-32 pt-10 pb-8 overflow-hidden">
+    <footer className="relative mt-1 overflow-hidden bg-[#070b12] pt-10 pb-8">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-x-0 -top-24 h-40 bg-gradient-to-b from-emerald-500/10 via-purple-500/5 to-transparent blur-3xl" />
 

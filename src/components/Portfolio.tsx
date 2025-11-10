@@ -118,7 +118,7 @@ export default function Portfolio() {
     <>
       <Header />
 
-      <main className="relative bg-black text-white overflow-hidden">
+      <main className="relative overflow-hidden bg-gradient-to-b from-black via-[#05070d] to-[#070b12] text-white">
         <div className="pointer-events-none absolute inset-0">
           <motion.div
             style={{ y: glowTranslate }}
@@ -309,7 +309,7 @@ export default function Portfolio() {
         </Section>
 
         {/* CONTACT CTA SECTION */}
-        <Section id="contact" className="relative py-24 md:py-32">
+        <Section id="contact" className="relative pt-24 pb-16 md:pt-32 md:pb-24">
           <Container>
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
