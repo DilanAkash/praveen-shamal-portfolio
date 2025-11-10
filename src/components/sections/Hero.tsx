@@ -2,8 +2,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
 // adjust paths based on where Hero.tsx is located
-import heroText from "../assets/hero-text.png";
-import heroPhoto from "../assets/hero-photo.png";
+import heroText from "/src/assets/hero-text.png";
+import heroPhoto from "/src/assets/hero-photo.png";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
