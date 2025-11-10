@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { projectOperations, isAdminConfigured } from "../../lib/sanityAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -81,9 +81,16 @@ function SortableProjectCard({
     opacity: isDragging ? 0.7 : 1,
   };
 
+  const setMotionNodeRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      setNodeRef(node);
+    },
+    [setNodeRef]
+  );
+
   return (
     <motion.div
-      ref={setNodeRef as any}
+      ref={setMotionNodeRef}
       style={style}
       layout
       initial={{ opacity: 0, y: 12 }}
@@ -354,7 +361,11 @@ export default function Dashboard() {
 
   const handleSelect = (id: string) => {
     const next = new Set(selectedProjects);
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
     setSelectedProjects(next);
   };
 
