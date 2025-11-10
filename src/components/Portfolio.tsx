@@ -309,7 +309,7 @@ export default function Portfolio() {
         </Section>
 
         {/* CONTACT CTA SECTION */}
-        <Section id="contact" className="relative pt-24 pb-16 md:pt-32 md:pb-24">
+        <Section id="contact" className="relative pt-24 pb-0 md:pt-32 md:pb-0">
           <Container>
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
