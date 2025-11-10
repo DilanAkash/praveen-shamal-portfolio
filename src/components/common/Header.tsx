@@ -28,7 +28,7 @@ export default function Header() {
       ].join(" ")}
     >
       <Container>
-        <nav className="flex h-16 items-center justify-between">
+        <nav className="flex h-10 items-center justify-between">
           {/* Brand */}
           <a 
             href="#hero" 
@@ -39,7 +39,7 @@ export default function Header() {
               alt="Voux — Praveen Shamal"
               className={[
                 "w-auto select-none transition-all duration-500",
-                scrolled ? "h-9" : "h-11"
+                scrolled ? "h-12" : "h-16"
               ].join(" ")}
               draggable="false"
             />
