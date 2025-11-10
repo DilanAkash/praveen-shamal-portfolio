@@ -5,7 +5,7 @@ import {
   type Easing,
   type Variants,
 } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { useLenis } from "../hooks/useLenis";
 
@@ -56,32 +56,127 @@ const aboutHighlights = [
   },
 ];
 
-const experienceTimeline = [
-  {
-    year: "2018",
-    title: "First Frame",
-    description:
-      "Picked up a camera and never looked back — documenting friends, music gigs, and the energy of Colombo nights.",
-  },
-  {
-    year: "2020",
-    title: "Weddings & Editorial",
-    description:
-      "Launched a boutique studio delivering intimate wedding narratives and editorial campaigns for local fashion labels.",
-  },
-  {
-    year: "2022",
-    title: "Cinematic Collective",
-    description:
-      "Co-founded a creative collective, blending film-inspired direction with experimental lighting for brands and artists.",
-  },
-  {
-    year: "2024",
-    title: "Beyond the Lens",
-    description:
-      "Expanding into motion reels, immersive experiences, and mentoring the next wave of visual storytellers in Sri Lanka.",
-  },
-];
+// Replaced the classic timeline with an interactive DragCards component.
+// DragCards (adapted) — lightweight, placed inline so no extra files or deps are required.
+import type { RefObject } from "react";
+
+export const DragCards = () => {
+  return (
+    <section className="relative grid min-h-[60vh] w-full place-content-center overflow-hidden bg-transparent">
+      <h2 className="relative z-0 text-[12vw] font-black text-neutral-800 md:text-[120px] text-white/6">
+        VOUX<span className="text-indigo-500">.</span>
+      </h2>
+      <Cards />
+    </section>
+  );
+};
+
+const Cards = () => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  return (
+    <div className="absolute inset-0 z-10" ref={containerRef}>
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1635373670332-43ea883bb081?q=80&w=2781&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="6deg"
+        top="20%"
+        left="25%"
+        className="w-36 md:w-56"
+      />
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1576174464184-fb78fe882bfd?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="12deg"
+        top="45%"
+        left="60%"
+        className="w-24 md:w-48"
+      />
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1503751071777-d2918b21bbd9?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="-6deg"
+        top="20%"
+        left="40%"
+        className="w-52 md:w-80"
+      />
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1620428268482-cf1851a36764?q=80&w=2609&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="8deg"
+        top="50%"
+        left="40%"
+        className="w-48 md:w-72"
+      />
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1602212096437-d0af1ce0553e?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="18deg"
+        top="20%"
+        left="65%"
+        className="w-40 md:w-64"
+      />
+      <Card
+        containerRef={containerRef}
+        src="https://images.unsplash.com/photo-1622313762347-3c09fe5f2719?q=80&w=2640&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Example image"
+        rotate="-3deg"
+        top="35%"
+        left="55%"
+        className="w-24 md:w-48"
+      />
+    </div>
+  );
+};
+
+type CardProps = {
+  containerRef: RefObject<HTMLDivElement | null>;
+  src: string;
+  alt: string;
+  top: string;
+  left: string;
+  rotate: string;
+  className?: string;
+};
+
+const Card = ({ containerRef, src, alt, top, left, rotate, className }: CardProps) => {
+  const [zIndex, setZIndex] = useState<number>(0);
+
+  const updateZIndex = () => {
+    const els = document.querySelectorAll(".drag-elements");
+
+    let maxZIndex = -Infinity;
+
+    els.forEach((el) => {
+      const z = parseInt(window.getComputedStyle(el).getPropertyValue("z-index"));
+
+      if (!isNaN(z) && z > maxZIndex) {
+        maxZIndex = z;
+      }
+    });
+
+    setZIndex(maxZIndex === -Infinity ? 1 : maxZIndex + 1);
+  };
+
+  return (
+    <motion.img
+      onMouseDown={updateZIndex}
+      style={{ top, left, rotate, zIndex }}
+      className={`drag-elements absolute w-48 bg-neutral-200 p-1 pb-4 ${className ?? ""}`}
+      src={src}
+      alt={alt}
+      drag
+      dragConstraints={containerRef}
+      // dragMomentum={false}
+      dragElastic={0.65}
+    />
+  );
+};
 
 const serviceCards = [
   {
@@ -307,7 +402,7 @@ export default function Portfolio() {
           </Container>
         </Section>
 
-        {/* EXPERIENCE TIMELINE */}
+        {/* EXPERIENCE TIMELINE -> replaced with DragCards */}
         <Section className="py-24 md:py-32">
           <Container>
             <motion.div
@@ -315,49 +410,21 @@ export default function Portfolio() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.8 }}
-              className="mx-auto mb-16 max-w-3xl text-center"
+              className="mx-auto mb-8 max-w-3xl text-center"
             >
               <p className="text-sm uppercase tracking-[0.3em] text-purple-400">
-                Origins & evolution
+                CREATIVITY
               </p>
               <h2 className="mt-4 text-3xl font-bold md:text-4xl lg:text-5xl">
-                A reel of milestones
+                Drag cards
               </h2>
               <p className="mt-6 text-gray-400">
-                From documentary beginnings to immersive cinematic experiences, every
-                chapter sharpened the craft and elevated the visual language.
+                Play with the cards — drag to rearrange and explore the composition.
               </p>
             </motion.div>
 
             <div className="relative mx-auto max-w-5xl">
-              <div className="absolute left-4 h-full w-px bg-gradient-to-b from-white/60 via-white/20 to-transparent md:left-1/2" />
-              <div className="flex flex-col gap-12 md:gap-16">
-                {experienceTimeline.map((milestone, index) => (
-                  <motion.div
-                    key={milestone.year}
-                    initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.5 }}
-                    transition={{ duration: 0.7, ease: cinematicEase }}
-                    className={`relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-8 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)] ${
-                      index % 2 === 0
-                        ? "md:ml-0 md:mr-[55%]"
-                        : "md:ml-[55%] md:mr-0"
-                    }`}
-                  >
-                    <span className="mb-3 inline-flex items-center rounded-full border border-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-300">
-                      {milestone.year}
-                    </span>
-                    <h3 className="text-2xl font-semibold text-white">
-                      {milestone.title}
-                    </h3>
-                    <p className="mt-4 text-sm leading-relaxed text-gray-300">
-                      {milestone.description}
-                    </p>
-                    <div className="absolute -left-1.5 top-6 h-3 w-3 rounded-full border border-purple-400/40 bg-black md:left-auto md:right-1/2" />
-                  </motion.div>
-                ))}
-              </div>
+              <DragCards />
             </div>
           </Container>
         </Section>
