@@ -1,9 +1,9 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
-// adjust paths based on where Hero.tsx is located
-import heroText from "/src/assets/hero-text.png";
-import heroPhoto from "/src/assets/hero-photo.png";
+// adjust path based on location of this file
+import heroText from "../../assets/hero-text.png";
+import heroPhoto from "../../assets/hero-photo.png";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -26,13 +26,81 @@ export default function Hero() {
     <section
       id="hero"
       ref={ref}
-      className="relative min-h-screen bg-neutral-100 overflow-hidden"
+      className="relative min-h-screen overflow-hidden bg-white"
     >
+      {/* LAYER 1: GRID BASE (inline style = guaranteed) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(0,0,0,0.10) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0,0,0,0.10) 1px, transparent 1px)
+          `,
+          backgroundSize: "26px 26px",
+        }}
+      />
+
+      {/* LAYER 2: SOFT EDGE FADE (keeps grid visible center) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 75%)
+          `,
+        }}
+      />
+
+      {/* LAYER 3: ANIMATED LIGHT BEAM (now clearly visible) */}
+      <motion.div
+        aria-hidden
+        initial={{ opacity: 0, x: "-30%" }}
+        animate={{ opacity: 0.7, x: ["-30%", "20%", "-10%"] }}
+        transition={{
+          duration: 14,
+          repeat: Infinity,
+          repeatType: "mirror",
+          ease: "easeInOut",
+        }}
+        className="pointer-events-none absolute -top-40 left-1/4 h-80 w-[60vw]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, transparent, rgba(255,255,255,0.95), transparent)",
+          filter: "blur(40px)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* LAYER 4: SPOTLIGHT BEHIND HERO PHOTO (DESKTOP) */}
+      <div
+        aria-hidden
+        className="pointer-events-none hidden lg:block absolute right-[6%] bottom-[8%] h-80 w-80"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at center, rgba(255,255,255,0.95), transparent)",
+          filter: "blur(35px)",
+          opacity: 0.9,
+        }}
+      />
+      {/* LAYER 5: Fine noise texture */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          backgroundImage: "url('/noise.png')", // or '/noise.png.jpg' if you keep that name
+          backgroundRepeat: "repeat",
+          backgroundSize: "320px 320px",
+          opacity: 0.25,
+          mixBlendMode: "soft-light",
+        }}
+      />
+
       {/* Desktop Layout */}
-      <div className="hidden lg:flex items-end justify-center min-h-screen">
+      <div className="hidden lg:flex items-end justify-center min-h-screen relative">
         <div className="container mx-auto px-8 w-full pb-0">
           <div className="grid grid-cols-2 gap-4 items-center">
-            {/* Left Side - Text Section */}
+            {/* Left: Text image */}
             <motion.div
               style={{ x: leftX, opacity }}
               initial={{ opacity: 0, x: -50 }}
@@ -48,7 +116,7 @@ export default function Hero() {
               />
             </motion.div>
 
-            {/* Right Side - Photos */}
+            {/* Right: Hero photo */}
             <motion.div
               style={{ x: rightX, opacity }}
               initial={{ opacity: 0, x: 50 }}
@@ -69,7 +137,7 @@ export default function Hero() {
 
       {/* Mobile Layout */}
       <div className="lg:hidden flex flex-col justify-end items-center min-h-screen pb-0 pt-20 relative">
-        {/* Text Section - Mobile (Behind) */}
+        {/* Text */}
         <motion.div
           style={{ y: mobileTextY }}
           initial={{ opacity: 0, y: 30 }}
@@ -85,7 +153,7 @@ export default function Hero() {
           />
         </motion.div>
 
-        {/* Photos - Mobile (In Front) */}
+        {/* Photo */}
         <motion.div
           style={{ y: mobilePhotoY, scale: mobileScale }}
           initial={{ opacity: 0, y: 30 }}
@@ -102,12 +170,12 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll Indicator - Desktop Only */}
+      {/* Scroll Indicator - Desktop */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="hidden lg:flex absolute bottom-10 left-1/2 transform -translate-x-1/2 flex-col items-center text-gray-600"
+        className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center text-gray-600"
       >
         <span className="text-sm tracking-wider">SCROLL</span>
         <motion.div

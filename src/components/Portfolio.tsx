@@ -351,7 +351,7 @@ export default function Portfolio() {
                       className="inline-flex items-center gap-3 rounded-full border border-white/20 px-5 py-3 transition duration-300 hover:border-purple-400 hover:bg-purple-500/10"
                     >
                       <span className="h-2 w-2 rounded-full bg-purple-400" />
-                      hello@praveenkarunarathna.com
+                      praveenshamal0000@gmail.com
                     </a>
                   </div>
                 </div>
