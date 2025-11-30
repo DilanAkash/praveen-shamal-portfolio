@@ -10,6 +10,8 @@ const CATEGORIES = [
   { value: "commercial", label: "Commercial" },
   { value: "retouch", label: "Editing / Retouch" },
   { value: "album", label: "Albums" },
+  { value: "events", label: "Events" },
+  { value: "photoshoots", label: "Photoshoots" },
 ];
 
 interface ProjectData {
