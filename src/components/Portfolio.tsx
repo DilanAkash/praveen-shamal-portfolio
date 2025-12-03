@@ -52,7 +52,7 @@ const aboutHighlights = [
   {
     title: "Human-First Approach",
     description:
-      "𝖯𝖱𝖠𝖵𝖤𝖤𝖭 𝖪𝖠𝖱𝖴𝖭𝖠𝖱𝖠𝖳𝖧𝖠 builds trust with every subject, capturing the quiet moments in-between that often tell the most powerful stories.",
+      "𝖯𝖱𝖠𝖵𝖤𝖤𝖭 𝖪𝖠𝖱𝖴𝖭𝖠𝖱𝖠𝖳N𝖠 builds trust with every subject, capturing the quiet moments in-between that often tell the most powerful stories.",
   },
 ];
 
