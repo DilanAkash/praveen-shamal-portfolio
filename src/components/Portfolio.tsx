@@ -361,17 +361,15 @@ export default function Portfolio() {
                 className="mt-6 text-lg leading-relaxed text-gray-300 md:text-xl"
               >
                 <motion.span variants={textItem}>
-                  Based in Sri Lanka, Praveen is an visual artist known
-                  for cinematic compositions that feel like fragments of an untold film.
+                 Based in Sri Lanka, Praveen is a visual storyteller known for cinematic shots that feel real, intimate, and alive. 
+                 His work blends natural movement, intentional framing, and the emotion of human moments. 
                 </motion.span>{" "}
                 <motion.span variants={textItem}>
-                  His work merges carefully engineered lighting with an instinct for human
-                  connection, resulting in frames that resonate long after the shutter closes.
+                  Capturing every detail exactly how it’s meant to be felt. 
+                  From once-in-a-lifetime celebrations to behind-the-scenes creativity for brands. 
                 </motion.span>{" "}
                 <motion.span variants={textItem}>
-                  Whether documenting once-in-a-lifetime celebrations or crafting editorial
-                  stories for brands, Praveen crafts experiences where every detail is choreographed
-                  to perfection.
+                  Praveen crafts visuals that turn ordinary moments into unforgettable stories.
                 </motion.span>
               </motion.p>
             </motion.div>
