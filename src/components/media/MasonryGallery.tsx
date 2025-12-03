@@ -39,6 +39,8 @@ interface CategoryInfo {
   color: string;
 }
 
+const normalizeCategory = (category?: string) => category?.trim().toLowerCase() || "uncategorized";
+
 const CATEGORIES: CategoryInfo[] = [
   { name: "All", label: "All Work", count: 0, color: "bg-white text-black" },
   { name: "wedding", label: "Wedding", count: 0, color: "bg-rose-500/20 text-rose-300 border-rose-500/30" },
@@ -46,6 +48,8 @@ const CATEGORIES: CategoryInfo[] = [
   { name: "commercial", label: "Commercial", count: 0, color: "bg-amber-500/20 text-amber-300 border-amber-500/30" },
   { name: "retouch", label: "Retouch", count: 0, color: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
   { name: "album", label: "Albums", count: 0, color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
+  { name: "events", label: "Events", count: 0, color: "bg-orange-500/20 text-orange-200 border-orange-500/30" },
+  { name: "photoshoots", label: "Photoshoots", count: 0, color: "bg-cyan-500/20 text-cyan-200 border-cyan-500/30" },
 ];
 
 type SortOption = "newest" | "oldest" | "category";
@@ -236,7 +240,7 @@ export default function MasonryGallery() {
           .map((item) => {
             try {
               const source = item.image as Record<string, unknown>;
-
+              const category = normalizeCategory(item.category);
               // Generate optimized image URLs
               // Use responsive sizing that works well on both mobile and desktop
               const thumbnailSrc = urlFor(source)
@@ -269,7 +273,7 @@ export default function MasonryGallery() {
                 fullSrc,
                 thumbnailSrc,
                 alt: item.title || "Portfolio image",
-                category: item.category || "uncategorized",
+                category,
                 createdAt: item._createdAt,
                 lqip: item.lqip,
               } as ImageItem;
