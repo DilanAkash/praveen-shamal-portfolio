@@ -351,7 +351,7 @@ export default function Portfolio() {
                 Meet the storyteller
               </p>
               <h2 className="mt-6 text-4xl font-black tracking-tight text-white md:text-5xl lg:text-6xl">
-                𝖯𝖱𝖠𝖵𝖤𝖤𝖭 𝖪𝖠𝖱𝖴𝖭𝖠𝖱𝖠𝖳𝖧𝖠
+                𝖯𝖱𝖠𝖵𝖤𝖤𝖭 𝖪𝖠𝖱𝖴𝖭𝖠𝖱𝖠𝖳𝖧N𝖠
               </h2>
               <motion.p
                 variants={textContainer}
