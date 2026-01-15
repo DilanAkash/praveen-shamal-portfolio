@@ -333,7 +333,7 @@ export default function Portfolio() {
         <Hero />
 
         {/* ABOUT */}
-        <Section id="about" className="relative py-24 md:py-32">
+        <Section id="about" className="relative py-16 md:py-32">
           <Container>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
               {/* Left Column: Vertical Label (Hidden on mobile) */}
@@ -365,7 +365,7 @@ export default function Portfolio() {
                 </motion.div>
 
                 {/* Big Name Typography */}
-                <h2 className="relative text-5xl md:text-8xl lg:text-[7rem] font-black tracking-tighter leading-[0.9] text-white mix-blend-overlay">
+                <h2 className="relative text-4xl md:text-8xl lg:text-[7rem] font-black tracking-tighter leading-[0.9] text-white mix-blend-overlay">
                   <span className="block">PRAVEEN</span>
                   <span className="block text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.25)] hover:[-webkit-text-stroke:1px_rgba(16,185,129,0.8)] transition-all duration-700 select-none">
                     KARUNARATHNA
@@ -373,7 +373,7 @@ export default function Portfolio() {
                 </h2>
 
                 {/* Split Text Layout */}
-                <div className="mt-16 grid md:grid-cols-5 gap-10 md:gap-16 border-l border-white/10 pl-0 md:pl-10">
+                <div className="mt-8 md:mt-16 grid md:grid-cols-5 gap-6 md:gap-16 border-l-0 md:border-l border-white/10 pl-0 md:pl-10">
                   {/* Lead - High Impact */}
                   <div className="md:col-span-2">
                     <p className="text-2xl md:text-3xl font-light leading-snug text-white/90">
@@ -458,7 +458,7 @@ export default function Portfolio() {
         </Section>
 
         {/* PORTFOLIO GALLERY */}
-        <Section id="gallery" className="py-24 md:py-32">
+        <Section id="gallery" className="py-16 md:py-32">
           <Container>
             <motion.div
               initial={{ opacity: 0, y: 20 }}

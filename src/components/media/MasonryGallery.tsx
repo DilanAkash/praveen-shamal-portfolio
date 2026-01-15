@@ -91,8 +91,12 @@ function ImageCard({
   const categoryInfo = CATEGORIES.find((cat) => cat.name === item.category) || CATEGORIES[0];
 
   // On mobile, show info always; on desktop, show on hover
-  const showInfo = isMobile ? true : hovered;
-  const showOverlay = isMobile || hovered;
+  // Update: On mobile, we now keep it cleaner. Only show overlay on hover (desktop) or if we want specific mobile behavior.
+  // Actually, for mobile, let's keep the image clean and only show title/metadata on tap/interaction or make it very subtle.
+  // Current decision: Only show overlay on hover (desktop). On mobile, users can tap to view full screen.
+  // But we need some label? Let's make it very subtle at the bottom.
+  const showInfo = isMobile ? false : hovered; // Hide text on mobile by default to keep grid clean
+  const showOverlay = hovered; // Only dark overlay on hover
 
   return (
     <motion.div
@@ -127,21 +131,26 @@ function ImageCard({
           style={{ filter: imageLoaded ? "none" : "blur(20px)" }}
         />
 
-        {/* Gradient overlay - always visible on mobile, hover on desktop */}
+        {/* Gradient overlay - always visible on mobile (subtle), hover on desktop (stronger) */}
         <div
-          className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 transition-opacity duration-300 ${showOverlay ? "opacity-100" : "opacity-0 md:opacity-0"
-            }`}
+          className={`absolute inset-0 transition-opacity duration-300 ${
+            showOverlay
+              ? "opacity-100 bg-gradient-to-t from-black/95 via-black/60 to-black/20" // Desktop hover
+              : isMobile
+              ? "opacity-100 bg-gradient-to-t from-black/80 to-transparent" // Mobile default (subtle)
+              : "opacity-0"
+          }`}
         />
 
-        {/* Content overlay - Simplified on mobile for 2-column layout */}
+        {/* Content overlay */}
         <div
-          className={`absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 text-white pointer-events-none transition-opacity duration-300 ${showInfo ? "opacity-100" : "opacity-0 md:opacity-0"
-            }`}
+          className={`absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 text-white pointer-events-none transition-opacity duration-300 ${
+            showInfo || isMobile ? "opacity-100" : "opacity-0"
+          }`}
         >
           {/* Category badge - Smaller on mobile */}
           <div
-            className={`inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-full text-xs font-semibold mb-1 sm:mb-1.5 md:mb-2 w-fit border ${categoryInfo.color
-              }`}
+            className={`inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-full text-xs font-semibold mb-1 sm:mb-1.5 md:mb-2 w-fit border ${categoryInfo.color} ${isMobile ? "hidden md:inline-flex" : ""}`}
           >
             <span className="hidden sm:inline">{categoryInfo.label}</span>
             <span className="sm:hidden text-[10px] font-medium">

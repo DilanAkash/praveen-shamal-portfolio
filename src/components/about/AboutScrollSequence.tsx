@@ -256,6 +256,7 @@ const TextOverlay = ({
     mainTitle,
     subTitle
 }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     progress: any;
     start: number;
     end: number;
