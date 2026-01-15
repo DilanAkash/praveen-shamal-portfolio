@@ -457,20 +457,21 @@ export default function MasonryGallery() {
   }));
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
+      <div ref={sentinelRef} className="absolute -top-12 h-1 w-full pointer-events-none opacity-0" />
+
       {/* Premium Filter & Sort Bar */}
       <div
         ref={filterRef}
-        className={`relative z-40 mb-10 transition-all duration-500 ease-out ${filterSticky && !isMobile
-          ? "sticky top-4 md:top-6"
-          : ""
-          }`}
+        className={`relative z-40 mb-10 transition-all duration-500 ease-out 
+          ${!isMobile ? "sticky top-4 md:top-6" : ""}
+        `}
       >
         <div className={`
            relative flex flex-col items-center justify-between gap-6 rounded-[2rem] 
            border border-white/10 bg-[#0a0a0a]/80 p-4 shadow-2xl backdrop-blur-xl transition-all
            md:flex-row md:pl-6 md:pr-4 md:py-3
-           ${filterSticky && !isMobile ? "shadow-[0_8px_32px_rgba(0,0,0,0.5)] border-white/15 bg-[#050505]/90" : ""}
+           ${filterSticky && !isMobile ? "shadow-[0_8px_32px_rgba(0,0,0,0.5)] border-white/15 bg-[#050505]/90 scale-[1.02]" : ""}
         `}>
 
           {/* Categories - Sliding Pill Design */}
