@@ -15,17 +15,13 @@ import Container from "./common/Container";
 import Section from "./common/Section";
 import MasonryGallery from "./media/MasonryGallery";
 import Hero from "./sections/Hero";
+import AboutScrollSequence from "./about/AboutScrollSequence";
 
 /* ---------- Motion + Variants ---------- */
 
 const cinematicEase: Easing = [0.22, 1, 0.36, 1];
 
-const textContainer: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12 },
-  },
-};
+
 
 const textItem: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -316,7 +312,7 @@ export default function Portfolio() {
     <>
       <Header />
 
-      <main className="relative overflow-hidden bg-gradient-to-b from-black via-[#05070d] to-[#070b12] text-white">
+      <main className="relative bg-gradient-to-b from-black via-[#05070d] to-[#070b12] text-white">
         {/* Ambient glows */}
         <div className="pointer-events-none absolute inset-0">
           <motion.div
@@ -339,64 +335,98 @@ export default function Portfolio() {
         {/* ABOUT */}
         <Section id="about" className="relative py-24 md:py-32">
           <Container>
-            <motion.div
-              ref={parallaxRef}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 1, ease: cinematicEase }}
-              className="mx-auto max-w-5xl text-center md:text-left"
-            >
-              <p className="text-sm uppercase tracking-[0.3em] text-emerald-400">
-                Meet the storyteller
-              </p>
-              <h2 className="mt-6 text-4xl font-black tracking-tight text-white md:text-5xl lg:text-6xl">
-                PRAVEEN KARUNARATHNA
-              </h2>
-              <motion.p
-                variants={textContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.6 }}
-                className="mt-6 text-lg leading-relaxed text-gray-300 md:text-xl"
-              >
-                <motion.span variants={textItem}>
-                 Based in Sri Lanka, Praveen is a visual storyteller known for cinematic shots that feel real, intimate, and alive. 
-                 His work blends natural movement, intentional framing, and the emotion of human moments. 
-                </motion.span>{" "}
-                <motion.span variants={textItem}>
-                  Capturing every detail exactly how it’s meant to be felt. 
-                  From once-in-a-lifetime celebrations to behind-the-scenes creativity for brands. 
-                </motion.span>{" "}
-                <motion.span variants={textItem}>
-                  Praveen crafts visuals that turn ordinary moments into unforgettable stories.
-                </motion.span>
-              </motion.p>
-            </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+              {/* Left Column: Vertical Label (Hidden on mobile) */}
+              <div className="lg:col-span-1 hidden lg:flex flex-col gap-6 pt-4">
+                <div className="h-px w-12 bg-emerald-500/50" />
+                <span className="text-[10px] font-mono text-emerald-500 tracking-[0.3em] uppercase [writing-mode:vertical-rl] rotate-180 opacity-80 mix-blend-plus-lighter">
+                  Visual Director
+                </span>
+              </div>
 
-            {/* About highlight cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.9, ease: cinematicEase }}
-              className="mt-16 grid gap-8 md:grid-cols-3"
-            >
-              {aboutHighlights.map((highlight) => (
-                <motion.article
-                  key={highlight.title}
-                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-emerald-400/60 hover:bg-white/10"
+              {/* Right Column: Main Content */}
+              <motion.div
+                ref={parallaxRef}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 1, ease: cinematicEase }}
+                className="lg:col-span-11 relative z-10"
+              >
+                {/* Header pill */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-sm mb-10"
                 >
-                  <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl transition duration-500 group-hover:bg-emerald-400/20" />
-                  <h3 className="text-2xl font-semibold text-white">
-                    {highlight.title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-relaxed text-gray-300">
-                    {highlight.description}
-                  </p>
-                </motion.article>
-              ))}
-            </motion.div>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-300 font-medium">Meet the Storyteller</span>
+                </motion.div>
+
+                {/* Big Name Typography */}
+                <h2 className="relative text-5xl md:text-8xl lg:text-[7rem] font-black tracking-tighter leading-[0.9] text-white mix-blend-overlay">
+                  <span className="block">PRAVEEN</span>
+                  <span className="block text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.25)] hover:[-webkit-text-stroke:1px_rgba(16,185,129,0.8)] transition-all duration-700 select-none">
+                    KARUNARATHNA
+                  </span>
+                </h2>
+
+                {/* Split Text Layout */}
+                <div className="mt-16 grid md:grid-cols-5 gap-10 md:gap-16 border-l border-white/10 pl-0 md:pl-10">
+                  {/* Lead - High Impact */}
+                  <div className="md:col-span-2">
+                    <p className="text-2xl md:text-3xl font-light leading-snug text-white/90">
+                      Based in Sri Lanka, Praveen is a visual storyteller known for cinematic shots that feel <span className="text-emerald-400 font-serif italic selection:bg-emerald-500/30">real, intimate, and alive.</span>
+                    </p>
+                  </div>
+
+                  {/* Details - Secondary */}
+                  <div className="md:col-span-3 space-y-8 text-base md:text-lg text-gray-400 leading-relaxed">
+                    <motion.p variants={textItem} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      His work blends natural movement, intentional framing, and the emotion of human moments.
+                      Capturing every detail exactly how it’s meant to be felt.
+                    </motion.p>
+
+                    <div className="h-px w-full bg-gradient-to-r from-white/10 to-transparent" />
+
+                    <motion.p variants={textItem} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: 0.2 }}>
+                      From once-in-a-lifetime celebrations to behind-the-scenes creativity for brands.
+                      Praveen crafts visuals that turn ordinary moments into unforgettable stories.
+                    </motion.p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </Container>
+
+          {/* SCROLLYTELLING SEQUENCE */}
+          <div className="relative w-full">
+            <AboutScrollSequence />
+          </div>
+
+          <Container>            <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.9, ease: cinematicEase }}
+            className="mt-16 grid gap-8 md:grid-cols-3"
+          >
+            {aboutHighlights.map((highlight) => (
+              <motion.article
+                key={highlight.title}
+                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-emerald-400/60 hover:bg-white/10"
+              >
+                <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl transition duration-500 group-hover:bg-emerald-400/20" />
+                <h3 className="text-2xl font-semibold text-white">
+                  {highlight.title}
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-gray-300">
+                  {highlight.description}
+                </p>
+              </motion.article>
+            ))}
+          </motion.div>
           </Container>
         </Section>
 
