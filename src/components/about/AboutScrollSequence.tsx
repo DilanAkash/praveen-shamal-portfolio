@@ -172,7 +172,7 @@ export default function AboutScrollSequence() {
                 {/* --- Canvas Layer --- */}
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 h-full w-full object-contain z-0 mix-blend-screen opacity-90"
+                    className="absolute inset-0 h-full w-full object-contain md:object-cover z-0 mix-blend-screen opacity-90 scale-[1.8] md:scale-100"
                     style={{ width: "100%", height: "100%" }}
                 />
 
@@ -185,6 +185,9 @@ export default function AboutScrollSequence() {
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.5)_40%,black_90%)]" />
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_bottom,black_0%,transparent_15%,transparent_85%,black_100%)]" />
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_right,black_0%,transparent_42%,transparent_70%,black_100%)]" />
+
+                {/* --- Mobile Only Extra Top/Bottom Vignette --- */}
+                <div className="block md:hidden pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_bottom,black_0%,black_25%,transparent_42%,transparent_58%,black_75%,black_100%)] duration-300" />
 
                 {/* --- Text Overlays (Framer Motion) --- */}
                 <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
