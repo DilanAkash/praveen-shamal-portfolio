@@ -122,30 +122,26 @@ function ImageCard({
           alt={item.alt}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
-          className={`w-full h-auto object-cover transition-all duration-500 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          } ${!isMobile ? "group-hover:scale-105" : ""}`}
+          className={`w-full h-auto object-cover transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
+            } ${!isMobile ? "group-hover:scale-105" : ""}`}
           style={{ filter: imageLoaded ? "none" : "blur(20px)" }}
         />
 
         {/* Gradient overlay - always visible on mobile, hover on desktop */}
         <div
-          className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 transition-opacity duration-300 ${
-            showOverlay ? "opacity-100" : "opacity-0 md:opacity-0"
-          }`}
+          className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 transition-opacity duration-300 ${showOverlay ? "opacity-100" : "opacity-0 md:opacity-0"
+            }`}
         />
 
         {/* Content overlay - Simplified on mobile for 2-column layout */}
         <div
-          className={`absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 text-white pointer-events-none transition-opacity duration-300 ${
-            showInfo ? "opacity-100" : "opacity-0 md:opacity-0"
-          }`}
+          className={`absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 text-white pointer-events-none transition-opacity duration-300 ${showInfo ? "opacity-100" : "opacity-0 md:opacity-0"
+            }`}
         >
           {/* Category badge - Smaller on mobile */}
           <div
-            className={`inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-full text-xs font-semibold mb-1 sm:mb-1.5 md:mb-2 w-fit border ${
-              categoryInfo.color
-            }`}
+            className={`inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-full text-xs font-semibold mb-1 sm:mb-1.5 md:mb-2 w-fit border ${categoryInfo.color
+              }`}
           >
             <span className="hidden sm:inline">{categoryInfo.label}</span>
             <span className="sm:hidden text-[10px] font-medium">
@@ -208,14 +204,46 @@ export default function MasonryGallery() {
   const [isMobile, setIsMobile] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  // Detect mobile device
+  // Calculate initial limit based on screen size (2 rows)
+  const [initialLimit, setInitialLimit] = useState(8);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Close sort dropdown on click outside
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false);
+      }
     };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Update limit and mobile state on resize
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+
+      // Calculate items needed for 2 visual rows
+      // xl: 4 columns * 2 rows = 8
+      // lg: 3 columns * 2 rows = 6
+      // md/sm: 2 columns * 2 rows = 4
+      if (width >= 1280) { // xl
+        setInitialLimit(8);
+      } else if (width >= 1024) { // lg
+        setInitialLimit(6);
+      } else { // md, sm, mobile
+        setInitialLimit(4);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Fetch images from Sanity
@@ -328,24 +356,38 @@ export default function MasonryGallery() {
     });
 
     setFilteredImages(filtered);
+    // Reset view state when filter changes (optional logic)
+    if (activeCategory !== "All") setIsExpanded(false);
   }, [images, activeCategory, sortBy]);
 
-  // Sticky filter bar on scroll - disabled on mobile for better UX
+  // Get visible images based on state
+  const visibleImages = isExpanded ? filteredImages : filteredImages.slice(0, initialLimit);
+  const hasMoreImages = filteredImages.length > initialLimit;
+
+  // Sticky state detection using IntersectionObserver (prevents flickering)
   useEffect(() => {
     if (isMobile) {
       setFilterSticky(false);
       return;
     }
 
-    const handleScroll = () => {
-      if (filterRef.current) {
-        const rect = filterRef.current.getBoundingClientRect();
-        setFilterSticky(rect.top <= 0);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // If sentinel is NOT intersecting and we are below it (bounding box check), bar is stuck
+        setFilterSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      {
+        root: null,
+        rootMargin: "-100px 0px 0px 0px", // Offset to trigger stylistic change slightly after sticking
+        threshold: [0],
       }
-    };
+    );
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => observer.disconnect();
   }, [isMobile]);
 
   // Handle filter change
@@ -358,6 +400,17 @@ export default function MasonryGallery() {
         gallerySection.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
+  };
+
+  const handleToggleExpand = () => {
+    if (isExpanded) {
+      // If collapsing, scroll back to gallery top
+      const gallerySection = document.getElementById("gallery");
+      if (gallerySection) {
+        gallerySection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+    setIsExpanded(!isExpanded);
   };
 
   if (loading) {
@@ -405,80 +458,143 @@ export default function MasonryGallery() {
 
   return (
     <div className="w-full">
-      {/* Filter and Sort Controls */}
+      {/* Premium Filter & Sort Bar */}
       <div
         ref={filterRef}
-        className={`mb-4 md:mb-8 transition-all duration-300 ${
-          filterSticky && !isMobile
-            ? "sticky top-16 z-40 bg-black/95 backdrop-blur-md py-4 -mx-4 px-4 rounded-lg border-b border-white/10"
-            : ""
-        }`}
+        className={`relative z-40 mb-10 transition-all duration-500 ease-out ${filterSticky && !isMobile
+          ? "sticky top-4 md:top-6"
+          : ""
+          }`}
       >
-        {/* Category Filters - Mobile optimized */}
-        <div className="mb-3 md:mb-4 -mx-1 md:-mx-2 px-1 md:px-2">
-          <div className="flex items-center gap-2 md:gap-3 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-            {CATEGORIES.filter((cat) => cat.name === "All" || categoryCounts[cat.name] > 0).map(
-              (category) => {
-                const count = categoryCounts[category.name] || 0;
-                const isActive = activeCategory === category.name;
+        <div className={`
+           relative flex flex-col items-center justify-between gap-6 rounded-[2rem] 
+           border border-white/10 bg-[#0a0a0a]/80 p-4 shadow-2xl backdrop-blur-xl transition-all
+           md:flex-row md:pl-6 md:pr-4 md:py-3
+           ${filterSticky && !isMobile ? "shadow-[0_8px_32px_rgba(0,0,0,0.5)] border-white/15 bg-[#050505]/90" : ""}
+        `}>
 
-                return (
-                  <motion.button
-                    key={category.name}
-                    onClick={() => handleFilter(category.name)}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-200 border whitespace-nowrap snap-start touch-manipulation ${
-                      isActive
-                        ? "bg-white text-black border-white shadow-lg"
-                        : "bg-transparent text-white/70 border-white/20 active:bg-white/10"
-                    }`}
-                    aria-pressed={isActive}
-                  >
-                    <span className="flex items-center gap-1.5 md:gap-2">
-                      {category.label}
+          {/* Categories - Sliding Pill Design */}
+          <div className="relative w-full overflow-hidden md:w-auto">
+            {/* Gradient masks for scroll indication */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-r from-black/80 to-transparent md:hidden" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l from-black/80 to-transparent md:hidden" />
+
+            <div className="no-scrollbar flex w-full items-center gap-1 overflow-x-auto scroll-smooth px-4 pb-2 pt-2 md:gap-2 md:px-0 md:py-0">
+              {CATEGORIES.filter((cat) => cat.name === "All" || categoryCounts[cat.name] > 0).map(
+                (category) => {
+                  const count = categoryCounts[category.name] || 0;
+                  const isActive = activeCategory === category.name;
+
+                  return (
+                    <button
+                      key={category.name}
+                      onClick={() => handleFilter(category.name)}
+                      className={`relative z-0 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${isActive ? "text-black" : "text-gray-400 hover:text-white"
+                        }`}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeFilterTab"
+                          className="absolute inset-0 -z-10 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                      )}
+
+                      <span className="relative z-10">{category.label}</span>
+
+                      {/* Count Badge */}
                       {count > 0 && (
                         <span
-                          className={`px-1.5 py-0.5 rounded-full text-xs ${
-                            isActive
-                              ? "bg-black/20 text-black"
-                              : "bg-white/20 text-white/70"
-                          }`}
+                          className={`relative z-10 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold transition-colors ${isActive
+                            ? "bg-black/20 text-black"
+                            : "bg-white/10 group-hover:bg-white/20 text-gray-400"
+                            }`}
                         >
                           {count}
                         </span>
                       )}
-                    </span>
-                  </motion.button>
-                );
-              }
-            )}
-          </div>
-        </div>
-
-        {/* Sort and Results Count - Stack on mobile */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
-          <div className="text-xs md:text-sm text-gray-400">
-            Showing <span className="text-white font-semibold">{filteredImages.length}</span>{" "}
-            {filteredImages.length === 1 ? "image" : "images"}
-            {activeCategory !== "All" && (
-              <span className="hidden md:inline">
-                {" "}
-                in {CATEGORIES.find((c) => c.name === activeCategory)?.label}
-              </span>
-            )}
+                    </button>
+                  );
+                }
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className="text-xs md:text-sm text-gray-400">Sort:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2 md:py-1.5 bg-gray-900/50 border border-white/20 rounded-lg text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent touch-manipulation"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="category">By Category</option>
-            </select>
+          {/* Right Side: Stats & Custom Sort */}
+          <div className="flex w-full items-center justify-between gap-4 border-t border-white/5 pt-4 md:w-auto md:border-none md:pt-0">
+            {/* Counter */}
+            <div className="hidden text-xs font-medium tracking-wide text-gray-500 lg:block">
+              <span className="text-white">{visibleImages.length}</span> DISPLAYED
+            </div>
+
+            {/* Divider */}
+            <div className="hidden h-6 w-px bg-white/10 lg:block" />
+
+            {/* Custom Sort Dropdown */}
+            <div className="relative z-50 flex-1 md:flex-none" ref={sortRef}>
+              <button
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="group flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-gray-300 backdrop-blur-sm transition-all hover:bg-white/10 hover:text-white md:w-48"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  <span>
+                    {sortBy === "newest" ? "Newest First" :
+                      sortBy === "oldest" ? "Oldest First" : "By Category"}
+                  </span>
+                </div>
+                <svg
+                  className={`h-4 w-4 text-gray-500 transition-transform duration-300 group-hover:text-emerald-400 ${isSortOpen ? "rotate-180" : ""
+                    }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <AnimatePresence>
+                {isSortOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-full mt-2 w-full min-w-[12rem] overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] p-1.5 shadow-xl ring-1 ring-white/5 backdrop-blur-2xl md:w-56"
+                  >
+                    {[
+                      { value: "newest", label: "Newest First" },
+                      { value: "oldest", label: "Oldest First" },
+                      { value: "category", label: "By Category" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortBy(option.value as SortOption);
+                          setIsSortOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all ${sortBy === option.value
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : "text-gray-400 hover:bg-white/5 hover:text-white"
+                          }`}
+                      >
+                        {option.label}
+                        {sortBy === option.value && (
+                          <motion.div layoutId="sortCheck">
+                            <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </motion.div>
+                        )}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -495,19 +611,57 @@ export default function MasonryGallery() {
           </button>
         </div>
       ) : (
-        <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-2 sm:gap-3 md:gap-4">
-          <AnimatePresence mode="popLayout">
-            {filteredImages.map((item, index) => (
-              <ImageCard
-                key={item.id}
-                item={item}
-                index={index}
-                onClick={() => setLightboxIndex(index)}
-                isMobile={isMobile}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+        <>
+          <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-2 sm:gap-3 md:gap-4 min-h-[400px]">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {visibleImages.map((item, index) => (
+                <ImageCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onClick={() => setLightboxIndex(index)}
+                  isMobile={isMobile}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Show More / Show Less Button */}
+          {hasMoreImages && (
+            <motion.div
+              layout
+              className="mt-12 flex justify-center"
+            >
+              <button
+                onClick={handleToggleExpand}
+                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-white/5 px-8 py-3 text-sm font-medium text-white ring-1 ring-white/20 transition-all hover:bg-white/10 hover:ring-emerald-400/50 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] active:scale-95"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {isExpanded ? "Show Less" : "View Entire Gallery"}
+                  <svg
+                    className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+
+                {/* Button Glow Effect */}
+                <div className="absolute inset-0 -z-10 translate-y-full bg-gradient-to-t from-emerald-500/20 to-transparent transition-transform duration-300 group-hover:translate-y-0" />
+              </button>
+            </motion.div>
+          )}
+
+          {/* View More Counter/Info */}
+          {!isExpanded && hasMoreImages && (
+            <div className="mt-4 text-center text-xs text-gray-500">
+              And {filteredImages.length - visibleImages.length} more masterpieces...
+            </div>
+          )}
+        </>
       )}
 
       {/* Enhanced Lightbox */}
